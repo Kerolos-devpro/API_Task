@@ -1,4 +1,5 @@
 ﻿using API_Task.Data;
+using API_Task.DTO;
 using API_Task.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,20 @@ namespace API_Task.Controllers;
 public class StudentsController(SchoolContext context) : ControllerBase
 {
     [HttpGet("")]
-    public IActionResult Get() => Ok(context.Student.ToList());
+    public IActionResult Get() =>
+        Ok(context.Student.Include(x => x.MedicalReport)
+            .Select(x => new StudentRespone(x))
+            .ToList());
+
 
 
     [HttpGet("{id}")]
     public IActionResult GetOne(int id)
     {
-        var student = context.Student.FirstOrDefault(x => x.Id == id);
-        return student is not null ? Ok(student) : NotFound();
+        var student = context.Student.Include(x => x.MedicalReport)
+            .FirstOrDefault(x => x.Id == id);
+            
+        return student is not null ? Ok(new StudentRespone(student)) : NotFound();
     }
 
     [HttpPost("")]
@@ -53,7 +60,13 @@ public class StudentsController(SchoolContext context) : ControllerBase
         var student = context.Student.FirstOrDefault(s => s.Id == id);
         if (student == null) return NotFound();
 
-         context.Remove(student);
+        var medicalReport = context.MedicalReport.FirstOrDefault(x => x.stdId == student.Id);
+        if (medicalReport != null)
+        {
+            context.Remove(medicalReport);
+        }
+
+        context.Remove(student);
         context.SaveChanges();
 
         return NoContent();

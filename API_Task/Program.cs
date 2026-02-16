@@ -21,7 +21,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.UseSwaggerUI(options => options.SwaggerEndpoint("/openApi/v1.json", "v1"));
+            //app.UseSwaggerUI(options => options.SwaggerEndpoint("/openApi/v1.json", "v1"));
         }
 
         app.UseHttpsRedirection();
